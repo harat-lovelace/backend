@@ -1,0 +1,19 @@
+# ==========================================
+# Security and Configuration for Mr. Laba-Laba Backend
+# ==========================================
+
+# 1. Disable Directory Listing
+Options -Indexes
+
+# 2. Prevent Access to sensitive directories and configs
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 3. Set standard Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
