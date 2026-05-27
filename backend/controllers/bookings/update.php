@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * UPDATE BOOKING API ENDPOINT
  * 

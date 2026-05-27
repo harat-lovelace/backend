@@ -26,6 +26,9 @@ define('DB_NAME', 'laundry_system');     // Database name
 // Application base URL
 define('APP_URL', 'http://localhost/jenjen-po-main/backend');
 
+// API Version
+define('API_VERSION', '1.0.0');
+
 // Frontend application URL
 define('FRONTEND_URL', 'http://localhost:5173');
 

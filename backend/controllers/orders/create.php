@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * CREATE ORDER API ENDPOINT
  * 

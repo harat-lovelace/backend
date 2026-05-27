@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Calendar as CalendarIcon, Clock, CheckCircle2, Truck, Package, HelpCircle, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet, apiPost } from '../services/api';
 import { toast } from 'sonner';
 
 const BOOKING_STATUS_CONFIG: Record<string, { color: string; bg: string; border: string; label: string }> = {
@@ -58,8 +58,7 @@ export default function SchedulePage() {
   const loadUserBookings = async () => {
     if (!user) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/bookings.php?userId=${user.id}`);
-      const data = await response.json();
+      const data = await apiGet(`/bookings?userId=${user.id}`);
       if (data.success) {
         setUserBookings(data.data);
       }
@@ -70,8 +69,7 @@ export default function SchedulePage() {
 
   const loadSlotAvailability = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/bookings.php?action=slots_for_date&date=${selectedDate}`);
-      const data = await response.json();
+      const data = await apiGet(`/bookings?action=slots_for_date&date=${selectedDate}`);
       if (data.success) {
         setSlotCounts(data.data);
       }
@@ -113,19 +111,14 @@ export default function SchedulePage() {
     if (loading) return;
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/bookings.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: selectedDate,
-          time: selectedTime,
-          serviceType,
-          userId: user?.id || 'guest',
-          userName: user?.name || 'Guest',
-          userEmail: user?.email || ''
-        })
+      const data = await apiPost('/bookings', {
+        date: selectedDate,
+        time: selectedTime,
+        serviceType,
+        userId: user?.id || 'guest',
+        userName: user?.name || 'Guest',
+        userEmail: user?.email || ''
       });
-      const data = await response.json();
       if (data.success) {
         await loadUserBookings();
         setShowSuccess(true);

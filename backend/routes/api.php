@@ -48,6 +48,11 @@ if ($version === 'api') {
     $endpoint = $segments[1] ?? '';
     $method = $segments[2] ?? '';
     $id = $segments[3] ?? null;
+} else {
+    // Direct endpoint routing (e.g., /auth/signup, /orders, /health)
+    $endpoint = $version;
+    $method = $segments[1] ?? '';
+    $id = $segments[2] ?? null;
 }
 
 // Route requests
@@ -86,6 +91,18 @@ if (empty($endpoint)) {
 
 try {
     switch ($endpoint) {
+        case 'health':
+            require(__DIR__ . '/../controllers/health.php');
+            break;
+
+        case 'notifications':
+            require(__DIR__ . '/../controllers/notifications.php');
+            break;
+
+        case 'profile':
+            require(__DIR__ . '/../controllers/profile.php');
+            break;
+
         case 'auth':
             if ($method === 'signup') {
                 require(__DIR__ . '/../controllers/auth/signup.php');

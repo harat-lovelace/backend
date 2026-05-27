@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * GET SINGLE BOOKING API ENDPOINT
  * 

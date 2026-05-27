@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { CheckCircle2, Package, HelpCircle, Waves, Sparkles, Clock, Star, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiPost } from '../services/api';
 import { toast } from 'sonner';
 
 const InfoTip = ({ text }: { text: string }) => (
@@ -79,11 +79,7 @@ export default function OrderPage() {
         dataPayload.append('image', imageFile);
       }
 
-      const response = await fetch(`${API_BASE_URL}/orders.php`, {
-        method: 'POST',
-        body: dataPayload
-      });
-      const result = await response.json();
+      const result = await apiPost('/orders', dataPayload);
       
       if (result.success) {
         setOrderId(result.data.orderId);

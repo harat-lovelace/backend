@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiPost, checkBackendHealth } from '../services/api';
 
 interface User {
   id: string;
@@ -15,36 +15,36 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
   isAuthenticated: boolean;
+  backendConnected: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [backendConnected, setBackendConnected] = useState(true);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+    
+    // Check backend health on mount
+    checkBackendHealth().then(setBackendConnected);
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/login.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+      const result = await apiPost<{ id: string; name: string; email: string; role: 'customer' | 'admin'; token?: string }>('/auth/login', { email, password }, { skipErrorToast: true });
       
-      const result = await response.json();
-      
-      if (result.success) {
+      if (result.success && result.data) {
         const userPayload = result.data;
         setUser(userPayload);
         localStorage.setItem('currentUser', JSON.stringify(userPayload));
+        if (result.data.token) {
+          localStorage.setItem('authToken', result.data.token);
+        }
         return { success: true };
       } else {
         return { success: false, message: result.message || 'Incorrect email or password.' };
@@ -57,20 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (name: string, email: string, password: string, role: 'customer' | 'admin' = 'customer'): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/signup.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, email, password, role })
-      });
+      const result = await apiPost<{ id: string; name: string; email: string; role: 'customer' | 'admin'; token?: string }>('/auth/signup', { name, email, password, role }, { skipErrorToast: true });
       
-      const result = await response.json();
-      
-      if (result.success) {
+      if (result.success && result.data) {
         const userPayload = result.data;
         setUser(userPayload);
         localStorage.setItem('currentUser', JSON.stringify(userPayload));
+        if (result.data.token) {
+          localStorage.setItem('authToken', result.data.token);
+        }
         return { success: true };
       } else {
         return { success: false, message: result.message || 'An error occurred during registration.' };
@@ -83,14 +78,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/logout.php`, {
-        method: 'POST'
-      });
+      await apiPost('/auth/logout', {}, { skipErrorToast: true });
     } catch (error) {
       console.error('Logout API error:', error);
     }
     setUser(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
   };
 
   const updateUser = (updatedUser: User) => {
@@ -99,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, updateUser, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, updateUser, isAuthenticated: !!user, backendConnected }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from './AuthContext';
 import { Package, Clock, CheckCircle2, Calendar, Users, ArrowRight, AlertCircle, User, Key, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet, apiPost } from '../services/api';
 import { toast } from 'sonner';
 
 const STATUS_COLOR: Record<string, string> = {
@@ -42,22 +42,18 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const ordersRes = await fetch(`${API_BASE_URL}/orders.php`);
-      const ordersData = await ordersRes.json();
+      const ordersRes = await apiGet('/orders');
+      const bookingsRes = await apiGet('/bookings');
+      const statsRes = await apiGet('/admin_stats');
       
-      const bookingsRes = await fetch(`${API_BASE_URL}/bookings.php`);
-      const bookingsData = await bookingsRes.json();
-      
-      const statsRes = await fetch(`${API_BASE_URL}/admin_stats.php`);
-      const statsData = await statsRes.json();
-      
-      if (ordersData.success && bookingsData.success && statsData.success) {
-        setOrders(ordersData.data);
-        setBookings(bookingsData.data);
-        setCustomers(new Array(statsData.data.customersCount).fill({}));
+      if (ordersRes.success && bookingsRes.success && statsRes.success) {
+        setOrders(ordersRes.data || []);
+        setBookings(bookingsRes.data || []);
+        setCustomers(new Array((statsRes.data as any)?.customersCount || 0).fill({}));
       }
     } catch (err) {
       console.error('Error loading admin dashboard:', err);
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -68,17 +64,13 @@ export default function AdminDashboard() {
     if (profileLoading) return;
     setProfileLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/profile.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: profileName,
-          email: profileEmail,
-          password: profilePassword
-        })
+      const result = await apiPost('/profile', {
+        name: profileName,
+        email: profileEmail,
+        password: profilePassword
       });
-      const result = await response.json();
-      if (result.success) {
+      
+      if (result.success && result.data) {
         updateUser(result.data);
         setProfilePassword('');
         toast.success('Admin profile updated successfully!');

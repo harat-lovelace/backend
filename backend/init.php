@@ -53,5 +53,7 @@ function errorHandler($errno, $errstr, $errfile, $errline) {
  */
 function exceptionHandler($exception) {
     error_log('Exception: ' . $exception->getMessage());
-    Response::serverError('An unexpected error occurred');
+    // Reveal exception message in development for easier debugging
+    $msg = 'An unexpected error occurred: ' . $exception->getMessage();
+    Response::serverError($msg);
 }

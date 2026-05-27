@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * LIST BOOKINGS API ENDPOINT
  * 

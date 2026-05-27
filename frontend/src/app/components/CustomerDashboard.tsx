@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from './AuthContext';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet, apiPost } from '../services/api';
 import { toast } from 'sonner';
 import {
   Package, Calendar, Bell, Clock, CheckCircle2, Droplets, Wind,
@@ -72,14 +72,9 @@ export default function CustomerDashboard() {
     if (!user) return;
     setLoading(true);
     try {
-      const ordersResponse = await fetch(`${API_BASE_URL}/orders.php?userId=${user.id}`);
-      const ordersData = await ordersResponse.json();
-      
-      const bookingsResponse = await fetch(`${API_BASE_URL}/bookings.php?userId=${user.id}`);
-      const bookingsData = await bookingsResponse.json();
-
-      const notificationsResponse = await fetch(`${API_BASE_URL}/notifications.php?email=${user.email}`);
-      const notificationsData = await notificationsResponse.json();
+      const ordersData = await apiGet(`/orders?userId=${user.id}`);
+      const bookingsData = await apiGet(`/bookings?userId=${user.id}`);
+      const notificationsData = await apiGet(`/notifications?email=${user.email}`);
       
       if (ordersData.success && bookingsData.success) {
         setOrders(ordersData.data);
@@ -97,12 +92,7 @@ export default function CustomerDashboard() {
 
   const dismissNotification = async (id: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/notifications.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'mark_read', notificationId: id })
-      });
-      const result = await response.json();
+      const result = await apiPost('/notifications', { action: 'mark_read', notificationId: id });
       if (result.success) {
         loadCustomerData();
       }
@@ -116,16 +106,11 @@ export default function CustomerDashboard() {
     if (profileLoading) return;
     setProfileLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/profile.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: profileName,
-          email: profileEmail,
-          password: profilePassword
-        })
+      const result = await apiPost('/profile', {
+        name: profileName,
+        email: profileEmail,
+        password: profilePassword
       });
-      const result = await response.json();
       if (result.success) {
         updateUser(result.data);
         setProfilePassword('');

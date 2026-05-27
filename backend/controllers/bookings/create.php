@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * CREATE BOOKING API ENDPOINT
  * 

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * SEARCH ORDERS API ENDPOINT
  * 

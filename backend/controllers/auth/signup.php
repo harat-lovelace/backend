@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * USER SIGNUP API ENDPOINT
  * 
@@ -26,22 +26,24 @@ $input = json_decode(file_get_contents('php://input'), true);
 // Reset validation errors
 Validator::reset();
 
-// Extract and sanitize input
-$fullName = isset($input['full_name']) ? Validator::sanitizeString($input['full_name']) : '';
+// Extract and sanitize input - support both 'name' and 'full_name' field names
+$fullName = isset($input['name']) ? Validator::sanitizeString($input['name']) : 
+            (isset($input['full_name']) ? Validator::sanitizeString($input['full_name']) : '');
 $email = isset($input['email']) ? Validator::sanitizeEmail($input['email']) : '';
 $password = $input['password'] ?? '';
-$confirmPassword = $input['confirm_password'] ?? '';
+// Support optional confirm_password - if not provided, just use password
+$confirmPassword = $input['confirm_password'] ?? $input['password'] ?? '';
 $phoneNumber = isset($input['phone_number']) ? Validator::sanitizeString($input['phone_number']) : '';
+$role = isset($input['role']) && in_array($input['role'], ['customer', 'admin']) ? $input['role'] : 'customer';
 
 // Validate input
 $valid = true;
 
-if (!Validator::required($fullName, 'full_name')) $valid = false;
+if (!Validator::required($fullName, 'name')) $valid = false;
 if (!Validator::required($email, 'email')) $valid = false;
 if (!Validator::email($email, 'email')) $valid = false;
 if (!Validator::required($password, 'password')) $valid = false;
 if (!Validator::minLength($password, 6, 'password')) $valid = false;
-if (!Validator::required($confirmPassword, 'confirm_password')) $valid = false;
 if (!Validator::match($password, $confirmPassword, 'passwords')) $valid = false;
 
 // Return validation errors if any
@@ -67,13 +69,13 @@ try {
     // Hash password
     $hashedPassword = password_hash($password, PASSWORD_ALGO);
 
-    // Insert new user
+    // Insert new user with the role from frontend
     $query = "INSERT INTO users (email, password, full_name, role, phone_number) 
               VALUES (?, ?, ?, ?, ?)";
     
     $result = $db->execute(
         $query,
-        [$email, $hashedPassword, $fullName, 'customer', $phoneNumber],
+        [$email, $hashedPassword, $fullName, $role, $phoneNumber],
         "sssss"
     );
 
@@ -101,11 +103,12 @@ try {
         'role' => $newUser['role']
     ]);
 
-    // Return success response
+    // Return success response with both 'full_name' and 'name' for frontend compatibility
     Response::success(
         [
             'id' => $newUser['id'],
             'email' => $newUser['email'],
+            'name' => $newUser['full_name'],
             'full_name' => $newUser['full_name'],
             'role' => $newUser['role'],
             'token' => $token

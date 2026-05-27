@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * GET SINGLE ORDER API ENDPOINT
  * 

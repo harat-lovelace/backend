@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Navigate } from 'react-router';
 import { Search, Package, Droplets, Wind, FoldVertical, CheckCircle2, HelpCircle, ArrowRight, Calendar, Truck } from 'lucide-react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet } from '../services/api';
 
 const InfoTip = ({ text }: { text: string }) => (
   <span className="group relative inline-flex items-center ml-1">
@@ -89,12 +89,11 @@ export default function TrackingPage() {
     if (!query) return;
 
     try {
-      const url = user?.role === 'customer' 
-        ? `${API_BASE_URL}/orders.php?search=${encodeURIComponent(query)}&userId=${user.id}` 
-        : `${API_BASE_URL}/orders.php?search=${encodeURIComponent(query)}`;
+      const searchUrl = user?.role === 'customer' 
+        ? `/orders?search=${encodeURIComponent(query)}&userId=${user.id}` 
+        : `/orders?search=${encodeURIComponent(query)}`;
         
-      const response = await fetch(url);
-      const data = await response.json();
+      const data = await apiGet(searchUrl);
       
       if (data.success && data.data.length > 0) {
         setMatchingOrders(data.data);

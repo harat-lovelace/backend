@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * CHECK BOOKING AVAILABILITY API ENDPOINT
  * 

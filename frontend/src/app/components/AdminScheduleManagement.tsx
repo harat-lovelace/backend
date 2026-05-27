@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Search, Users, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet, apiPost } from '../services/api';
 import { toast } from 'sonner';
 
 const STATUS_CFG: Record<string, { bg: string; border: string; color: string; label: string }> = {
@@ -29,8 +29,7 @@ export default function AdminScheduleManagement() {
   const loadBookings = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/bookings.php`);
-      const data = await response.json();
+      const data = await apiGet('/bookings');
       if (data.success) {
         setBookings(data.data);
       } else {
@@ -47,12 +46,7 @@ export default function AdminScheduleManagement() {
   const updateBookingStatus = async (bookingId: number, status: 'accepted' | 'rejected') => {
     setActionLoading(bookingId);
     try {
-      const response = await fetch(`${API_BASE_URL}/bookings.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_status', bookingId, status })
-      });
-      const data = await response.json();
+      const data = await apiPost('/bookings', { action: 'update_status', bookingId, status });
       if (data.success) {
         toast.success(`Booking status updated to ${status === 'accepted' ? 'confirmed' : 'rejected'}.`);
         loadBookings();

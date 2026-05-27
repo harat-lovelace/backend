@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, ArrowRight, HelpCircle, Trash2, XCircle, Loader2, Calendar } from 'lucide-react';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet, apiPost, apiPut, apiDelete } from '../services/api';
 import { toast } from 'sonner';
 
 const InfoTip = ({ text }: { text: string }) => (
@@ -77,10 +77,9 @@ export default function AdminOrderManagement() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders.php`);
-      const data = await response.json();
+      const data = await apiGet('/orders');
       if (data.success) {
-        setOrders(data.data);
+        setOrders(data.data || []);
       } else {
         toast.error(data.message || 'Failed to load orders.');
       }
@@ -97,20 +96,15 @@ export default function AdminOrderManagement() {
     if (submitLoading) return;
     setSubmitLoading(true);
     try {
-      const dataPayload = new FormData();
-      dataPayload.append('customerName', newOrder.customerName);
-      dataPayload.append('contactNumber', newOrder.contactNumber);
-      dataPayload.append('laundryType', newOrder.laundryType);
-      dataPayload.append('weight', newOrder.weight);
-      dataPayload.append('specialInstructions', newOrder.specialInstructions);
-      dataPayload.append('userId', 'admin-created');
-      dataPayload.append('userEmail', 'admin-created');
-
-      const response = await fetch(`${API_BASE_URL}/orders.php`, {
-        method: 'POST',
-        body: dataPayload
+      const data = await apiPost('/orders', {
+        customerName: newOrder.customerName,
+        contactNumber: newOrder.contactNumber,
+        laundryType: newOrder.laundryType,
+        weight: newOrder.weight,
+        specialInstructions: newOrder.specialInstructions,
+        userId: 'admin-created',
+        userEmail: 'admin-created'
       });
-      const data = await response.json();
       
       if (data.success) {
         toast.success('Order created successfully!');
@@ -145,12 +139,7 @@ export default function AdminOrderManagement() {
   const executeUpdateStatus = async (orderId: string, newStatus: string) => {
     setActionLoading(orderId);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_status', orderId, status: newStatus })
-      });
-      const data = await response.json();
+      const data = await apiPost('/orders', { action: 'update_status', orderId, status: newStatus });
       if (data.success) {
         toast.success(`Order status updated to ${newStatus}.`);
         loadOrders();
@@ -184,12 +173,7 @@ export default function AdminOrderManagement() {
   const executeAdvanceStatus = async (orderId: string) => {
     setActionLoading(orderId);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'advance', orderId })
-      });
-      const data = await response.json();
+      const data = await apiPost('/orders', { action: 'advance', orderId });
       if (data.success) {
         toast.success(`Order advanced to ${data.data?.nextStatus || 'next status'}.`);
         loadOrders();
@@ -216,12 +200,7 @@ export default function AdminOrderManagement() {
   const executeDeleteOrder = async (orderId: string) => {
     setActionLoading(orderId);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', orderId })
-      });
-      const data = await response.json();
+      const data = await apiPost('/orders', { action: 'delete', orderId });
       if (data.success) {
         toast.success(`Order ${orderId} deleted successfully.`);
         loadOrders();
@@ -248,12 +227,7 @@ export default function AdminOrderManagement() {
   const executeCancelOrder = async (orderId: string) => {
     setActionLoading(orderId);
     try {
-      const response = await fetch(`${API_BASE_URL}/orders.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cancel', orderId })
-      });
-      const data = await response.json();
+      const data = await apiPost('/orders', { action: 'cancel', orderId });
       if (data.success) {
         toast.success(`Order ${orderId} cancelled successfully.`);
         loadOrders();

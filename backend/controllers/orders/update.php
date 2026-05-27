@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * UPDATE ORDER API ENDPOINT
  * 

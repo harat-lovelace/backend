@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * GET CURRENT USER API ENDPOINT
  * 

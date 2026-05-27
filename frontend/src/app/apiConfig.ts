@@ -1,10 +1,10 @@
 /**
  * Central API Configuration File
- * Easily toggle between Local PHP Server (e.g. php -S localhost:8000) and Apache XAMPP/Laragon paths
+ * Configured for Laragon Apache development server
+ * Use environment variables from .env.local
  */
 
-// Option A: Standard local built-in PHP development server (php -S localhost:8000) - RECOMMENDED
-export const API_BASE_URL = 'http://localhost:8000/api';
+// Get API base URL from environment or use default for Laragon
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/jenjen-po-main/backend';
 
-// Option B: Apache XAMPP setup (if placed in htdocs)
-// export const API_BASE_URL = 'http://localhost/jenjen-po-main/jenjen-po-main/backend/api';
+export const API_BASE_URL = API_URL;

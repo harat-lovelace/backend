@@ -17,7 +17,7 @@ import {
   Bell
 } from 'lucide-react';
 import logoImg from '../../assets/laundry_logo.png';
-import { API_BASE_URL } from '../apiConfig';
+import { apiGet, apiPost } from '../services/api';
 import { toast } from 'sonner';
 
 export default function Navigation() {
@@ -41,8 +41,7 @@ export default function Navigation() {
   const loadNotifications = async () => {
     if (!user) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/notifications.php?email=${user.email}`);
-      const data = await response.json();
+      const data = await apiGet(`/notifications?email=${user.email}`);
       if (data.success) {
         setNotifications(data.data);
       }
@@ -54,12 +53,7 @@ export default function Navigation() {
   const markAllAsRead = async () => {
     if (!user) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/notifications.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'mark_all_read', email: user.email })
-      });
-      const data = await response.json();
+      const data = await apiPost('/notifications', { action: 'mark_all_read', email: user.email });
       if (data.success) {
         toast.success('All notifications marked as read.');
         loadNotifications();

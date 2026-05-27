@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * DELETE BOOKING API ENDPOINT
  * 

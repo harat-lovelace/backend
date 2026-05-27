@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * USER LOGIN API ENDPOINT
  * 
@@ -70,11 +70,12 @@ try {
         'role' => $user['role']
     ]);
 
-    // Return success response
+    // Return success response with both 'full_name' and 'name' for frontend compatibility
     Response::success(
         [
             'id' => $user['id'],
             'email' => $user['email'],
+            'name' => $user['full_name'],
             'full_name' => $user['full_name'],
             'role' => $user['role'],
             'token' => $token
